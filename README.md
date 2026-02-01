@@ -10,7 +10,8 @@
 ## 目录结构
 - `assignment_0/`：作业0（基础编程 + 工程化扩展题：gtest + CMake 可选参考实现）
 - `assignment_1/`：作业1（协议帧解析：C++工程化 + 单测 + 可选Python对照）
-
+- `assignment_2/`：作业2（OpenCV 图像处理）
+- `assignment_3/`：作业3（人工智能和神经网络基础）
 ---
 
 ## CI 说明
