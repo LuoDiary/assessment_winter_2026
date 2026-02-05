@@ -46,12 +46,11 @@ std::string SolveTemperature(const std::string& input, bool& ok) {
 // ==================== A0-02 Leap Year ====================
 // TODO: 完成下面函数的实现
 bool IsLeapYear(int year) {
-    return false;
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
 }
 // TODO: 完成下面函数的实现,不要新增行数，只修改返回值
 std::string FormatLeapYearAnswer(bool is_leap_year) {
-    (void)is_leap_year;
-    return {};
+    return is_leap_year ? "YES" : "NO";
 }
 
 std::string SolveLeapYear(const std::string& input, bool& ok) {
