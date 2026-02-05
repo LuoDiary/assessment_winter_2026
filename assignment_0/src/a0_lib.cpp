@@ -246,7 +246,34 @@ struct LogStats {
 };
 */
 LogStats AnalyzeLogFile(const std::string& path, bool& ok) {
-    return {};
+    std::ifstream file(path);
+    if (!file.is_open()) {
+        return {};
+    }
+    LogStats log;
+    std::string line;
+    long long cnt = 0;
+    while (std::getline(file, line))
+    {
+        if (line.empty()) continue;
+        std::istringstream iss(line);
+        std::string level;
+        long long ms;
+        iss >> level >> ms;
+        if (level == "INFO")
+            log.info++;
+        else if (level == "WARN")
+            log.warn++;
+        else if (level == "ERROR")
+            log.error++;
+        if (ms > log.max_ms)
+            log.max_level = level,log.max_ms = ms;
+        log.avg_ms += ms;
+        cnt++;
+    }
+    if (cnt) log.avg_ms /= cnt;
+    ok = true;
+    return log;
 }
 
 std::string SolveLogAnalyzer(const std::string& input, bool& ok) {
