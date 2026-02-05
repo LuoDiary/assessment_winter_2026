@@ -27,7 +27,7 @@ double CelsiusToFahrenheit(double celsius) {
 // 这里是格式化输出的函数
 std::string FormatFahrenheit(double fahrenheit) {
     std::ostringstream out;
-    out << std::fixed << std::setprecision(2) << fahrenheit;
+    out << std::fixed << std::setprecision(2) << fahrenheit << std::endl;
     return out.str();
 }
 
@@ -50,7 +50,7 @@ bool IsLeapYear(int year) {
 }
 // TODO: 完成下面函数的实现,不要新增行数，只修改返回值
 std::string FormatLeapYearAnswer(bool is_leap_year) {
-    return is_leap_year ? "YES" : "NO";
+    return is_leap_year ? "YES\n" : "NO\n";
 }
 
 std::string SolveLeapYear(const std::string& input, bool& ok) {
