@@ -175,6 +175,43 @@ private:
 };
 */
 
+BigInt::BigInt() : digits_() {}
+
+BigInt::BigInt(const std::string& s)
+{
+    for (auto it = s.rbegin(); it != s.rend(); ++it)
+        digits_.push_back(*it - '0');
+}
+
+BigInt operator+(const BigInt& a, const BigInt& b)
+{
+    BigInt res;
+    int carry = 0;
+    int i = 0;
+    while (i < a.digits_.size() || i < b.digits_.size())
+    {
+        if (i < a.digits_.size())
+            carry += a.digits_[i];
+        if (i < b.digits_.size())
+            carry += b.digits_[i];
+        res.digits_.push_back(carry % 10);
+        carry = carry / 10;
+        i++;
+    }
+    if (carry)
+        res.digits_.push_back(carry);
+    return res;
+}
+
+std::ostream& operator<<(std::ostream& os, const BigInt& x)
+{
+    bool flag = false;
+    for (int i = x.digits_.size() - 1; i >= 0; i--)
+        if (flag || x.digits_[i] || !i)
+            os << x.digits_[i], flag = true;
+    return os;
+}
+
 std::string SolveBigIntAdd(const std::string& input, bool& ok) {
     std::istringstream in(input);
     std::string a;
@@ -188,6 +225,9 @@ std::string SolveBigIntAdd(const std::string& input, bool& ok) {
         ok = false;
         return {};
     }
+
+    BigInt x(a), y(b);
+    out << x + y << "\n";
 
     ok = true;
     return out.str();
