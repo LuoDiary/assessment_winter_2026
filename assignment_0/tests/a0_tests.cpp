@@ -16,19 +16,24 @@
 #include <unistd.h>
 #include <vector>
 
+#include <windows.h>
+#include <string>
+
 static std::string MakeTempPath() {
-    std::string templ = "/tmp/rm_a0_XXXXXX";
-    std::vector<char> buf(templ.begin(), templ.end());
-    buf.push_back('\0');
-
-    int fd = mkstemp(buf.data());
-    if (fd == -1) {
-        return {};
+    char temp_path[MAX_PATH];
+    DWORD size = GetTempPathA(MAX_PATH, temp_path);
+    if (size == 0 || size >= MAX_PATH) {
+        return {}; // 获取临时目录失败
     }
-    close(fd);
-    return std::string(buf.data());
-}
 
+    char temp_file[MAX_PATH];
+    UINT result = GetTempFileNameA(temp_path, "rm_a0", 0, temp_file);
+    if (result == 0) {
+        return {}; // 创建临时文件名失败
+    }
+
+    return std::string(temp_file);
+}
 TEST(A001Temperature, ConvertsAndFormats) {
     bool ok = false;
     EXPECT_EQ(rm_a0::SolveTemperature("0\n", ok), "32.00\n");
