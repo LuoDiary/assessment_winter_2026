@@ -68,9 +68,7 @@ std::string SolveLeapYear(const std::string& input, bool& ok) {
 // ==================== A0-03 Range Sum ====================
 // TODO: 完成下面函数的实现
 long long RangeSum(long long l, long long r) {
-    (void)l;
-    (void)r;
-    return 0;
+    return (l + r) * (r - l + 1) / 2;
 }
 
 std::string SolveRangeSum(const std::string& input, bool& ok) {
