@@ -126,8 +126,20 @@ ScoreStatsResult ComputeScoreStats(const std::string& input, bool& ok) {
     ok = false;
     std::istringstream in(input);
     // TODO: 完成下面函数的实现
-
-    return ScoreStatsResult{};
+    ScoreStatsResult res, solve;
+    int n;
+    in >> n;
+    if (n == 0) return res;
+    for (int i = 0; i < n; i++)
+    {
+        in >> solve.top_name >> solve.top_score;
+        res.avg += solve.top_score;
+        if (solve.top_score > res.top_score)
+            res.top_name = solve.top_name, res.top_score = solve.top_score;
+    }
+    res.avg /= n;
+    ok = true;
+    return res;
 }
 
 std::string SolveScoreStats(const std::string& input, bool& ok) {
