@@ -16,6 +16,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace rm_a0 {
 
@@ -368,10 +369,49 @@ std::string SolveRaiiCopy(const std::string& input, bool& ok) {
 // ==================== A0-09 Text Pipeline====================
 
 std::vector<std::string> RunTextPipeline(const std::string& pipeline, const std::vector<std::string>& lines, bool& ok) {
-    (void)pipeline;
-    (void)lines;
-    ok = false;
-    return {};
+    if (pipeline.empty() || lines.empty())
+        return {};
+    std::vector<std::string> res, tokens;
+    std::istringstream ss(pipeline);
+    std::string token;
+    while (std::getline(ss, token, '|'))
+        tokens.push_back(token);
+    for (std::string line : lines)
+    {
+        // if (line.empty()) continue;
+        for (const auto& token : tokens)
+        {
+            if (token == "trim")
+            {
+                size_t start = line.find_first_not_of(" \t\n\r\f\v");
+                size_t end = line.find_last_not_of(" \t\n\r\f\v");
+                if( start != std::string::npos && end != std::string::npos)
+                    line = line.substr(start, end - start + 1);
+            }
+            else if (token == "upper")
+                std::transform(line.begin(), line.end(), line.begin(), [](unsigned char c) {return std::toupper(c);});
+            else if (token.substr(0, 7) == "replace")
+            {
+                size_t pos1 = token.find_first_of(":");
+                size_t pos2 = token.find_last_of(":");
+                if (pos1 == std::string::npos || pos2 == std::string::npos)
+                    return {};
+                std::string from = token.substr(pos1 + 1, pos2 - pos1 - 1);
+                std::string to = token.substr(pos2 + 1);
+                size_t pos = 0;
+                while((pos=line.find(from, pos))!=std::string::npos)
+                {
+                    line.replace(pos, from.length(), to);
+                    pos += to.length();
+                }
+            }
+            else
+                return {};
+        }
+        res.push_back(line);
+    }
+    ok = true;
+    return res;
 }
 
 // ==================== A0-10 Rule Engine ====================
