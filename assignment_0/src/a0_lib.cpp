@@ -330,8 +330,20 @@ private:
 };
 */
 
-bool CopyFile(const std::string& in_path, const std::string& out_path) {
+FileHandle::FileHandle(const char* path, const char* mode) : fp_(fopen(path, mode)) {}
+FileHandle::~FileHandle() { if (fp_) fclose(fp_); }
+bool FileHandle::valid() const { return fp_ != nullptr; }
+FILE* FileHandle::get() const { return fp_; }
 
+bool CopyFile(const std::string& in_path, const std::string& out_path) {
+    FileHandle in(in_path.c_str(), "rb");
+    FileHandle out(out_path.c_str(), "wb");
+    if (!in.valid() || !out.valid())
+        return false;
+    // copy file
+    char buf;
+    while (fread(&buf, 1, 1, in.get()) == 1)
+        fwrite(&buf, 1, 1, out.get());
     return true;
 }
 
