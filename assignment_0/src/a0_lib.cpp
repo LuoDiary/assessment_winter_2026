@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <unordered_map>
 
 namespace rm_a0 {
 
@@ -416,17 +417,126 @@ std::vector<std::string> RunTextPipeline(const std::string& pipeline, const std:
 
 // ==================== A0-10 Rule Engine ====================
 
+class IRule
+{
+protected:
+    mutable int ruleCnt = 0;
+    bool autoCnt(bool cmp) const
+    {
+        if (cmp) ruleCnt++;
+        return cmp;
+    }
+public:
+    virtual ~IRule() = default;
+    virtual bool match(const Event& event) const = 0;
+    int getRuleCnt() const { return ruleCnt; }
+};
+
+class RuleLevel : public IRule
+{
+private:
+    std::unordered_map<std::string, int> level_map;
+    int setLevel;
+    int findMap(const std::string& level) const
+    {
+        auto findResult = level_map.find(level);
+        if (findResult == level_map.end())
+            return -1;
+        return findResult->second;
+    }
+public:
+    RuleLevel(const std::string& level)
+    {
+        level_map["INFO"] = 1;
+        level_map["WARN"] = 2;
+        level_map["ERROR"] = 3;
+        setLevel = findMap(level);
+    }
+    bool match(const Event& event) const override
+    {
+        int findResult = findMap(event.level);
+        if (findResult == -1)
+            return false;
+        return autoCnt(findResult >= setLevel);
+    }
+};
+
+class RuleTime : public IRule
+{
+private:
+    int setTime;
+public:
+    RuleTime(const std::string& time) :setTime(std::stoi(time)) {}
+    bool match(const Event& event) const override
+    {
+        return autoCnt(event.ms > setTime);
+    }
+};
+
+class RuleMsg : public IRule
+{
+private:
+    std::string setMsg;
+public:
+    RuleMsg(const std::string& msg) :setMsg(msg) {}
+    bool match(const Event& event) const override
+    {
+        return autoCnt(event.msg.find(setMsg) != std::string::npos);
+    }
+};
+
+class RuleEngine
+{
+private:
+    std::vector<std::unique_ptr<IRule>> rules;
+public:
+    RuleEngine() = default;
+    ~RuleEngine() = default;
+    bool addRule(const std::string& rule)
+    {
+        if (rule.substr(0, 7) == "level>=")
+            rules.push_back(std::make_unique<RuleLevel>(rule.substr(7)));
+        else if (rule.substr(0, 3) == "ms>")
+            rules.push_back(std::make_unique<RuleTime>(rule.substr(3)));
+        else if (rule.substr(0, 13) == "msg_contains:")
+            rules.push_back(std::make_unique<RuleMsg>(rule.substr(13)));
+        else
+            return false;
+        return true;
+    }
+    void run(const Event& event)
+    {
+        for (const auto& rule : rules)
+        {
+            rule->match(event);
+        }
+    }
+    std::vector<long long> getRuleCnt(long long& total_cnt) const
+    {
+        std::vector<long long> res;
+        for (const auto& rule : rules)
+        {
+            total_cnt += rule->getRuleCnt() == 0 ? 0 : 1;
+            res.push_back(rule->getRuleCnt());
+        }
+        return res;
+    }
+};
+
 std::vector<long long> RunRuleEngine(
     const std::vector<std::string>& rule_specs,
     const std::vector<Event>& events,
     long long& total_any,
     bool& ok
 ) {
-    (void)rule_specs;
-    (void)events;
-    total_any = 0;
-    ok        = false;
-    return {};
+    RuleEngine engine;
+    for (const auto& rule : rule_specs)
+        if (!engine.addRule(rule))
+            return {};
+    for (const auto& event : events)
+        engine.run(event);
+    ok = true;
+    return engine.getRuleCnt(total_any);
 }
 
 // ==================== A0-11 Command Dispatcher====================
